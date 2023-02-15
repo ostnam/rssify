@@ -23,10 +23,13 @@ import qualified Data.Text as T ( Text )
 import qualified Data.Text.Lazy as TL ( Text )
 
 -- todo
-rssify :: [RssifyApp] -> Scotty.ScottyM ()
-rssify = mapM_ toScotty
+rssify :: [RssifyApp] -> [IO (Scotty.ScottyM ())]
+rssify = map toScotty
 
-toScotty :: RssifyApp -> Scotty.ScottyM ()
+join :: [IO (Scotty.ScottyM ())] -> IO (Scotty.ScottyM ())
+join = fmap sequence_  <$> sequence
+
+toScotty :: RssifyApp -> IO (Scotty.ScottyM ())
 toScotty (FromHtml url fn settings) = host settings $ fn <$> getFeed url
 toScotty (FromRequest getter settings) = host settings getter
 
@@ -35,15 +38,15 @@ getFeed url = do
   resp <- get url
   pure $ TagSoup.parseTags $ decodeUtf8 $ toStrict $ resp ^. responseBody
 
-host :: RssifyAppSettings -> IO Feed.Feed -> Scotty.ScottyM ()
+host :: RssifyAppSettings -> IO Feed.Feed -> IO (Scotty.ScottyM ())
 host settings feedGetter = do
-  initialFeed <- feedGetter
+  initialFeed <- liftIO feedGetter
   feedRef <- liftIO $ newTVarIO $ fromMaybe "" $ textFeed initialFeed
   _ <- liftIO . forkIO $ feedRefresh feedGetter feedRef
-  Scotty.get (Scotty.literal settings.url) $ do
+  return $ Scotty.get (Scotty.literal settings.url) $ do
     feed <- liftIO $ readTVarIO feedRef
     Scotty.text feed
-  
+
 feedRefresh :: IO Feed.Feed -> TVar TL.Text -> IO ()
 feedRefresh = undefined
 
