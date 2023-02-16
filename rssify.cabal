@@ -42,3 +42,23 @@ library
     , text ==1.*
     , wreq >=0.5 && <1
   default-language: Haskell2010
+
+executable rssify-example
+  main-is: Example.hs
+  other-modules:
+      Paths_rssify
+  hs-source-dirs:
+      examples
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
+  build-depends:
+      base >=4.7 && <5
+    , bytestring >=0.11 && <1
+    , feed >=1.3 && <2
+    , lens ==5.*
+    , rssify
+    , scotty >=0.12 && <1
+    , stm ==2.*
+    , tagsoup >=0.14 && <1
+    , text ==1.*
+    , wreq >=0.5 && <1
+  default-language: Haskell2010

@@ -43,3 +43,9 @@ ghc-options:
 
 library:
   source-dirs: src
+
+executables:
+  rssify-example:
+    source-dirs: examples
+    main: Example.hs
+    dependencies: rssify
