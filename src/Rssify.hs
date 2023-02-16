@@ -23,8 +23,8 @@ import qualified Data.Text as T ( Text )
 import qualified Data.Text.Lazy as TL ( Text )
 
 -- todo
-rssify :: [RssifyApp] -> [IO (Scotty.ScottyM ())]
-rssify = map toScotty
+rssify :: [RssifyApp] -> IO ()
+rssify apps = join (map toScotty apps) >>= Scotty.scotty 8000
 
 join :: [IO (Scotty.ScottyM ())] -> IO (Scotty.ScottyM ())
 join = fmap sequence_  <$> sequence
