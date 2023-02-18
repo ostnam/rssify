@@ -1,5 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE OverloadedRecordDot #-}
+{-# LANGUAGE NumDecimals #-}
 
 module Rssify
   ( rssify
@@ -12,10 +13,11 @@ import Network.Wreq ( get, responseBody )
 import Control.Lens ( (^.) )
 import Data.ByteString.Lazy (toStrict)
 import Text.Feed.Export ( textFeed )
-import Control.Concurrent.STM.TVar ( TVar, newTVarIO, readTVarIO )
+import Control.Concurrent.STM.TVar ( TVar, newTVarIO, readTVarIO, writeTVar )
+import Control.Monad.STM ( atomically )
 import Data.Maybe ( fromMaybe )
 import Control.Monad.IO.Class (liftIO)
-import Control.Concurrent ( forkIO )
+import Control.Concurrent ( forkIO, threadDelay )
 import qualified Web.Scotty as Scotty
 import qualified Text.HTML.TagSoup as TagSoup
 import qualified Text.Feed.Types as Feed
@@ -42,13 +44,18 @@ host :: RssifyAppSettings -> IO Feed.Feed -> IO (Scotty.ScottyM ())
 host settings feedGetter = do
   initialFeed <- feedGetter
   feedRef <- newTVarIO $ fromMaybe "" $ textFeed initialFeed
-  _ <- forkIO $ feedRefresh feedGetter feedRef
+  _ <- forkIO $ feedRefresh settings feedGetter feedRef
   return $ Scotty.get (Scotty.literal settings.url) $ do
     feed <- liftIO $ readTVarIO feedRef
     Scotty.text feed
 
-feedRefresh :: IO Feed.Feed -> TVar TL.Text -> IO ()
-feedRefresh = undefined
+feedRefresh :: RssifyAppSettings -> IO Feed.Feed -> TVar TL.Text -> IO ()
+feedRefresh settings getter tvar = do
+  threadDelay $ 1.0e6 * 60 * settings.refreshInterval
+  newFeed <- getter
+  atomically $ writeTVar tvar (fromMaybe "" $ textFeed newFeed)
+  feedRefresh settings getter tvar
+
 
 data RssifyApp = FromHtml String ([TagSoup.Tag T.Text] -> Feed.Feed) RssifyAppSettings
                | FromRequest (IO Feed.Feed) RssifyAppSettings
