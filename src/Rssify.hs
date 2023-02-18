@@ -40,9 +40,9 @@ getFeed url = do
 
 host :: RssifyAppSettings -> IO Feed.Feed -> IO (Scotty.ScottyM ())
 host settings feedGetter = do
-  initialFeed <- liftIO feedGetter
-  feedRef <- liftIO $ newTVarIO $ fromMaybe "" $ textFeed initialFeed
-  _ <- liftIO . forkIO $ feedRefresh feedGetter feedRef
+  initialFeed <- feedGetter
+  feedRef <- newTVarIO $ fromMaybe "" $ textFeed initialFeed
+  _ <- forkIO $ feedRefresh feedGetter feedRef
   return $ Scotty.get (Scotty.literal settings.url) $ do
     feed <- liftIO $ readTVarIO feedRef
     Scotty.text feed
