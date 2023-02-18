@@ -22,12 +22,12 @@ import qualified Text.Feed.Types as Feed
 import qualified Data.Text as T ( Text )
 import qualified Data.Text.Lazy as TL ( Text )
 
--- todo
 rssify :: [RssifyApp] -> IO ()
 rssify apps = join (map toScotty apps) >>= Scotty.scotty 8000
 
 join :: [IO (Scotty.ScottyM ())] -> IO (Scotty.ScottyM ())
-join = fmap sequence_  <$> sequence
+join = fmap sequence_ . sequence
+-- sequence gives IO [ScottyM ()], fmapping sequence_ over it gives a IO ScottyM ()
 
 toScotty :: RssifyApp -> IO (Scotty.ScottyM ())
 toScotty (FromHtml url fn settings) = host settings $ fn <$> getFeed url
