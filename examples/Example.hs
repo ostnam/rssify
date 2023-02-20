@@ -55,7 +55,7 @@ parseHn tagList = buildHNFeed (uncurry toHNEntry <$> getTitles tagList)
           }
 
 example2 :: RssifyApp
-example2 = FromRequest (mkFeed . parseEntries <$> getFeed) settings
+example2 = FromIO (mkFeed . parseEntries <$> getFeed) settings
   where settings = RssifyAppSettings { refreshInterval = 60
                                      , url = "/example2"
                                      }

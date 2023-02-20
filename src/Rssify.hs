@@ -24,8 +24,21 @@ import qualified Text.Feed.Types as Feed
 import qualified Data.Text as T ( Text )
 import qualified Data.Text.Lazy as TL ( Text )
 
+-- | The main function: a Scotty server will be ran, serving the generated RSS
+-- feeds to GET requests, at the specified path.
 rssify :: [RssifyApp] -> IO ()
 rssify apps = join (map toScotty apps) >>= Scotty.scotty 8000
+
+data RssifyApp = FromHtml String -- ^ The URL of the page to fetch.
+                          ([TagSoup.Tag T.Text] -> Feed.Feed) -- ^ The conversion function.
+                          RssifyAppSettings
+               | FromIO (IO Feed.Feed) -- ^ A function that will return a Feed.
+                        RssifyAppSettings
+
+data RssifyAppSettings = RssifyAppSettings
+  { refreshInterval :: Int -- ^ Interval of feed updates, in minutes.
+  , url :: String          -- ^ Path to the feed, on the current domain.
+  }
 
 join :: [IO (Scotty.ScottyM ())] -> IO (Scotty.ScottyM ())
 join = fmap sequence_ . sequence
@@ -33,7 +46,7 @@ join = fmap sequence_ . sequence
 
 toScotty :: RssifyApp -> IO (Scotty.ScottyM ())
 toScotty (FromHtml url fn settings) = host settings $ fn <$> getFeed url
-toScotty (FromRequest getter settings) = host settings getter
+toScotty (FromIO getter settings) = host settings getter
 
 getFeed :: String -> IO [TagSoup.Tag T.Text]
 getFeed url = do
@@ -55,12 +68,3 @@ feedRefresh settings getter tvar = do
   newFeed <- getter
   atomically $ writeTVar tvar (fromMaybe "" $ textFeed newFeed)
   feedRefresh settings getter tvar
-
-
-data RssifyApp = FromHtml String ([TagSoup.Tag T.Text] -> Feed.Feed) RssifyAppSettings
-               | FromRequest (IO Feed.Feed) RssifyAppSettings
-
-data RssifyAppSettings = RssifyAppSettings
-  { refreshInterval :: Int
-  , url :: String
-  }
