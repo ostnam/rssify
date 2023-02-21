@@ -16,7 +16,7 @@ import qualified Text.HTML.TagSoup as TagSoup
 example :: RssifyApp
 example = FromHtml "https://news.ycombinator.com/news" parseHn settings
   where settings = RssifyAppSettings { refreshInterval = 10
-                                     , url = "/example"
+                                     , appUrl = "/example"
                                      }
 
 parseHn :: [TagSoup.Tag T.Text] -> Feed
@@ -57,18 +57,18 @@ parseHn tagList = buildHNFeed (uncurry toHNEntry <$> getTitles tagList)
 example2 :: RssifyApp
 example2 = FromIO (mkFeed . parseEntries <$> getFeed) settings
   where settings = RssifyAppSettings { refreshInterval = 60
-                                     , url = "/example2"
+                                     , appUrl = "/example2"
                                      }
 
 getFeed :: IO ByteString
 getFeed = do
-  resp <- Wreq.postWith options "https://www.iiss.org/api/filter" body
+  resp <- Wreq.postWith options "https://www.iiss.org/api/filter" requestBody
   pure $ resp ^. Wreq.responseBody
     where options = Wreq.defaults
                   & Wreq.header "accept" .~ ["application/json"]
                   & Wreq.header "content-type" .~ ["application/json"]
-          body :: ByteString
-          body = "{\"templateId\":[\"{6BCFD2C9-4F0B-4ACE-95D7-D14C8B60CD4D}\"],\"componentId\":\"{E9850380-3707-43C9-994F-75ECE8048E04}\",\"page\":\"1\",\"amount\":10,\"filter\":{},\"tags\":null,\"sortType\":\"DateDesc\",\"restrictionType\":\"None\"}"
+          requestBody :: ByteString
+          requestBody = "{\"templateId\":[\"{6BCFD2C9-4F0B-4ACE-95D7-D14C8B60CD4D}\"],\"componentId\":\"{E9850380-3707-43C9-994F-75ECE8048E04}\",\"page\":\"1\",\"amount\":10,\"filter\":{},\"tags\":null,\"sortType\":\"DateDesc\",\"restrictionType\":\"None\"}"
 
 data ResponseBody = ResponseBody
   { body :: [ResponseEntry]
@@ -83,8 +83,8 @@ instance Aeson.FromJSON ResponseBody where
 
 
 data ResponseEntry = ResponseEntry
-  { link :: T.Text
-  , title :: T.Text
+  { responseLink :: T.Text
+  , responseTitle :: T.Text
   }
 
 instance Aeson.FromJSON ResponseEntry where
@@ -99,9 +99,9 @@ parseEntries bs = case (Aeson.decode bs) :: Maybe ResponseBody of
   Just a  -> toItem <$> a.body
   where toItem :: ResponseEntry -> RSS.Item
         toItem entry = RSS.Item
-          { RSS.itemURI = entry.link
-          , RSS.itemTitle = entry.title
-          , RSS.itemLink = entry.link
+          { RSS.itemURI = entry.responseLink
+          , RSS.itemTitle = entry.responseTitle
+          , RSS.itemLink = entry.responseLink
           , RSS.itemDesc = Nothing
           , RSS.itemDC = []
           , RSS.itemTopics = []

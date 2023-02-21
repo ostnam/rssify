@@ -37,7 +37,7 @@ data RssifyApp = FromHtml String -- ^ The URL of the page to fetch.
 
 data RssifyAppSettings = RssifyAppSettings
   { refreshInterval :: Int -- ^ Interval of feed updates, in minutes.
-  , url :: String          -- ^ Path to the feed, on the current domain.
+  , appUrl :: String       -- ^ Path to the feed, on the current domain.
   }
 
 join :: [IO (Scotty.ScottyM ())] -> IO (Scotty.ScottyM ())
@@ -58,7 +58,7 @@ host settings feedGetter = do
   initialFeed <- feedGetter
   feedRef <- newTVarIO $ fromMaybe "" $ textFeed initialFeed
   _ <- forkIO $ feedRefresh settings feedGetter feedRef
-  return $ Scotty.get (Scotty.literal settings.url) $ do
+  return $ Scotty.get (Scotty.literal settings.appUrl) $ do
     feed <- liftIO $ readTVarIO feedRef
     Scotty.text feed
 
