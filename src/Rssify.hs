@@ -4,6 +4,7 @@
 
 module Rssify
   ( rssify
+  , rssify'
   , RssifyApp (..)
   , RssifyAppSettings (..)
   ) where
@@ -27,7 +28,12 @@ import qualified Data.Text.Lazy as TL ( Text )
 -- | The main function: a Scotty server will be ran, serving the generated RSS
 -- feeds to GET requests, at the specified path.
 rssify :: [RssifyApp] -> IO ()
-rssify apps = join (map toScotty apps) >>= Scotty.scotty 8000
+rssify apps = rssify' apps >>= Scotty.scotty 8000
+
+-- | An alternative version of the previous function, that returns the
+-- ScottyM ().
+rssify' :: [RssifyApp] -> IO (Scotty.ScottyM ())
+rssify' apps = join (map toScotty apps)
 
 data RssifyApp = FromHtml String -- ^ The URL of the page to fetch.
                           ([TagSoup.Tag T.Text] -> Feed.Feed) -- ^ The conversion function.
