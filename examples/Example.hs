@@ -20,14 +20,14 @@ example = FromHtml "https://news.ycombinator.com/news" parseHn settings
                                      }
 
 parseHn :: [TagSoup.Tag T.Text] -> Feed
-parseHn tagList = buildHNFeed (uncurry toHNEntry <$> getTitles tagList)
-  where getTitles :: [TagSoup.Tag T.Text] -> [(T.Text, T.Text)]
-        getTitles ( TagSoup.TagOpen "span" [("class", "titleline")]
+parseHn tagList = buildHNFeed (uncurry toHNEntry <$> getTitlesAndLinks tagList)
+  where getTitlesAndLinks :: [TagSoup.Tag T.Text] -> [(T.Text, T.Text)]
+        getTitlesAndLinks ( TagSoup.TagOpen "span" [("class", "titleline")]
                   : TagSoup.TagOpen "a" [("href", link)]
                   : TagSoup.TagText title
-                  : rest) = (title, link) : getTitles rest
-        getTitles (_:xs) = getTitles xs
-        getTitles [] = []
+                  : rest) = (title, link) : getTitlesAndLinks rest
+        getTitlesAndLinks (_:xs) = getTitlesAndLinks xs
+        getTitlesAndLinks [] = []
 
         toHNEntry :: T.Text -> T.Text -> RSS.Item
         toHNEntry title link = RSS.Item
@@ -94,7 +94,7 @@ instance Aeson.FromJSON ResponseEntry where
     return $ ResponseEntry ("https://www.iiss.org" <> link) title
 
 parseEntries :: ByteString -> [RSS.Item]
-parseEntries bs = case (Aeson.decode bs) :: Maybe ResponseBody of
+parseEntries bs = case Aeson.decode bs :: Maybe ResponseBody of
   Nothing -> []
   Just a  -> toItem <$> a.body
   where toItem :: ResponseEntry -> RSS.Item
@@ -124,7 +124,5 @@ mkFeed items = RSS1Feed $ RSS.Feed
 
 
 main :: IO ()
-main = rssify [ example
-              , example2
-              ]
+main = rssify [ example , example2 ]
 
