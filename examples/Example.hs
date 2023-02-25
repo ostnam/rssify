@@ -2,16 +2,17 @@
 {-# LANGUAGE OverloadedRecordDot #-}
 module Main (main) where
 
-import Rssify
-import Text.Feed.Types ( Feed (RSS1Feed) )
-import Control.Lens ( (^.), (.~), (&) )
-import Data.ByteString.Lazy ( ByteString )
-import Data.Aeson ( (.:) )
-import qualified Data.Aeson as Aeson
-import qualified Network.Wreq as Wreq
+import           Data.Aeson ( (.:) )
+import           Data.ByteString.Lazy ( ByteString )
+import           Control.Lens ( (^.), (.~), (&) )
+import           Text.Feed.Types ( Feed (RSS1Feed) )
+import qualified Data.Aeson       as Aeson
+import qualified Network.Wreq     as Wreq
 import qualified Text.RSS1.Syntax as RSS ( Item (..), Feed (..), nullChannel )
 import qualified Data.Text as T
 import qualified Text.HTML.TagSoup as TagSoup
+
+import Rssify
 
 example :: RssifyApp
 example = FromHtml "https://news.ycombinator.com/news" parseHn settings

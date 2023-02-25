@@ -9,21 +9,21 @@ module Rssify
   , RssifyAppSettings (..)
   ) where
 
-import Data.Text.Encoding ( decodeUtf8 )
-import Network.Wreq ( get, responseBody )
-import Control.Lens ( (^.) )
-import Data.ByteString.Lazy (toStrict)
-import Text.Feed.Export ( textFeed )
-import Control.Concurrent.STM.TVar ( TVar, newTVarIO, readTVarIO, writeTVar )
-import Control.Monad.STM ( atomically )
-import Data.Maybe ( fromMaybe )
-import Control.Monad.IO.Class (liftIO)
-import Control.Concurrent ( forkIO, threadDelay )
-import qualified Web.Scotty as Scotty
+import           Control.Concurrent ( forkIO, threadDelay )
+import           Control.Concurrent.STM.TVar ( TVar, newTVarIO, readTVarIO, writeTVar )
+import           Control.Lens ( (^.) )
+import           Control.Monad.IO.Class (liftIO)
+import           Control.Monad.STM ( atomically )
+import           Data.ByteString.Lazy (toStrict)
+import           Data.Maybe ( fromMaybe )
+import           Data.Text.Encoding ( decodeUtf8 )
+import           Network.Wreq ( get, responseBody )
+import           Text.Feed.Export ( textFeed )
+import qualified Data.Text         as T ( Text )
+import qualified Data.Text.Lazy    as TL ( Text )
+import qualified Text.Feed.Types   as Feed
 import qualified Text.HTML.TagSoup as TagSoup
-import qualified Text.Feed.Types as Feed
-import qualified Data.Text as T ( Text )
-import qualified Data.Text.Lazy as TL ( Text )
+import qualified Web.Scotty        as Scotty
 
 -- | The main function: a Scotty server will be ran, serving the generated RSS
 -- feeds to GET requests, at the specified path.
