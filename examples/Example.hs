@@ -56,13 +56,14 @@ parseHn tagList = buildHNFeed (uncurry toHNEntry <$> getTitlesAndLinks tagList)
           }
 
 example2 :: RssifyApp
-example2 = FromIO (mkFeed . parseEntries <$> getFeed) settings
-  where settings = RssifyAppSettings { refreshInterval = 60
+example2 = FromIO getFeed settings
+  where getFeed = mkFeed . parseEntries <$> getFeedBS
+        settings = RssifyAppSettings { refreshInterval = 60
                                      , appUrl = "/example2"
                                      }
 
-getFeed :: IO ByteString
-getFeed = do
+getFeedBS :: IO ByteString
+getFeedBS = do
   resp <- Wreq.postWith options "https://www.iiss.org/api/filter" requestBody
   pure $ resp ^. Wreq.responseBody
     where options = Wreq.defaults
