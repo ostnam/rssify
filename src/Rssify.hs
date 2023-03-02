@@ -34,6 +34,7 @@ rssify apps = rssify' apps >>= Scotty.scotty 8000
 -- ScottyM ().
 rssify' :: [RssifyApp] -> IO (Scotty.ScottyM ())
 rssify' apps = join (map toScotty apps)
+  where join = fmap sequence_ . sequence
 
 data RssifyApp = FromHtml String -- ^ The URL of the page to fetch.
                           ([TagSoup.Tag T.Text] -> Feed.Feed) -- ^ The conversion function.
@@ -46,9 +47,6 @@ data RssifyAppSettings = RssifyAppSettings
   , appUrl :: String       -- ^ Path to the feed, on the current domain.
   }
 
-join :: [IO (Scotty.ScottyM ())] -> IO (Scotty.ScottyM ())
-join = fmap sequence_ . sequence
--- sequence gives IO [ScottyM ()], fmapping sequence_ over it gives a IO ScottyM ()
 
 toScotty :: RssifyApp -> IO (Scotty.ScottyM ())
 toScotty (FromHtml url fn settings) = host settings $ fn <$> getFeed url
