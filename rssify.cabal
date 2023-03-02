@@ -32,7 +32,8 @@ library
       src
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
   build-depends:
-      base >=4.7 && <5
+      aeson ==2.*
+    , base >=4.7 && <5
     , bytestring >=0.11 && <1
     , feed >=1.3 && <2
     , lens ==5.*
@@ -51,7 +52,8 @@ executable rssify-example
       examples
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
   build-depends:
-      base >=4.7 && <5
+      aeson ==2.*
+    , base >=4.7 && <5
     , bytestring >=0.11 && <1
     , feed >=1.3 && <2
     , lens ==5.*
