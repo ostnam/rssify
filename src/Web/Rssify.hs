@@ -2,7 +2,7 @@
 {-# LANGUAGE OverloadedRecordDot #-}
 {-# LANGUAGE NumDecimals #-}
 
-module Rssify
+module Web.Rssify
   ( rssify
   , rssify'
   , RssifyApp (..)

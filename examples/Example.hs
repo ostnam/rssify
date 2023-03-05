@@ -12,7 +12,7 @@ import qualified Text.RSS1.Syntax as RSS ( Item (..), Feed (..), nullChannel )
 import qualified Data.Text as T
 import qualified Text.HTML.TagSoup as TagSoup
 
-import Rssify
+import Web.Rssify
 
 example :: RssifyApp
 example = FromHtml "https://news.ycombinator.com/news" parseHn settings
